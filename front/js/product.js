@@ -62,14 +62,26 @@ function addToCart() {
     }
 
     // Id+couleur trouvé (meme id + meme couleur) -> mettre à jour la quantité
+    // Je compare ce qu'on veut ajouter (id + couleur) avec les lignes qui sont dans mon localStorage
 
+    for (const canap of cart) {
+        // Tester id et couleur pour voir s'ils existent dans le cart
+        if (canap.id === id && canap.color === colorValue) {
+            // On a trouvé le meme canapé avec la meme couleur
+            // On ajoute la nouvelle quantité à la quantité existante
+            canap.quantity += quantityValue;
+            // Mise à jour du localStorage
+            localStorage.setItem("cart", JSON.stringify(cart));
+            alert('Nous avons mis à jour la quantité de votre canapé');
+            // Je met fin à la fonction
+            return true;
+        }
+    }
 
     // Id+couleur non trouvé, on ajoute une ligne dans le localstorage
     cart.push({ id: id, color: colorValue, quantity: quantityValue });
     localStorage.setItem("cart", JSON.stringify(cart));
 
-
     // Alert : votre produit a bien été ajouté au panier
-
-    alert('votre produit a bien été ajouté au panier')
+    alert('Votre produit a bien été ajouté au panier')
 }
