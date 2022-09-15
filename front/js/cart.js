@@ -73,6 +73,9 @@ async function getDetailsFromServer() {
         })
     }
     // TODO : Mettre à jour la quantité
+    function changeQuantity(id, color, qty) {
+
+    }
 
     document.getElementById("totalQuantity").innerHTML = qty;
 
@@ -84,3 +87,4 @@ async function getDetailsFromServer() {
 getDetailsFromServer();
 
 // TODO verif formulaire
+
