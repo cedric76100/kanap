@@ -204,7 +204,7 @@ btnValidate.addEventListener("click", (event) => {
         }
     }
 
-    // Contrôle validité formulaire avant de l'envoyer dans le local storage
+    // Contrôle du formulaire avant de l'envoyer dans le local storage
     if (
         firstNameControl() &&
         lastNameControl() &&
