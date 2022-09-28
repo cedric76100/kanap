@@ -110,7 +110,7 @@ getDetailsFromServer();
 const btnValidate = document.querySelector("#order");
 
 // Écoute du bouton Valider sur le click pour pouvoir valider le formulaire
-btnValidate.addEventListener("click", (event) => {
+btnValidate.addEventListener("click", async (event) => {
     event.preventDefault();
 
     let contact = {
@@ -120,6 +120,19 @@ btnValidate.addEventListener("click", (event) => {
         city: document.querySelector("#city").value,
         email: document.querySelector("#email").value,
     };
+
+    let error = {
+        firstName: document.querySelector("#firstNameErrorMsg"),
+        lastName: document.querySelector("#lastNameErrorMsg"),
+        address: document.querySelector("#addressErrorMsg"),
+        city: document.querySelector("#cityErrorMsg"),
+        email: document.querySelector("#emailErrorMsg"),
+    }
+
+    // Effacer les champs précédemment en erreur
+    for (const field of Object.values(error)) {
+        field.textContent = ''
+    }
 
 
     // contrôle des champs Prénom, Nom et Ville
@@ -141,12 +154,10 @@ btnValidate.addEventListener("click", (event) => {
 
     // Fonctions de contrôle du champ Prénom:
     function firstNameControl() {
-        const prenom = contact.firstName;
-        if (regExPrenomNomVille(prenom)) {
-            document.querySelector("#firstNameErrorMsg").textContent = "";
+        if (regExPrenomNomVille(contact.firstName)) {
             return true;
         } else {
-            document.querySelector("#firstNameErrorMsg").textContent =
+            error.firstName.textContent =
                 "Champ Prénom de formulaire invalide, ex: Jules";
             return false;
         }
@@ -154,12 +165,10 @@ btnValidate.addEventListener("click", (event) => {
 
     // Fonctions de contrôle du champ Nom:
     function lastNameControl() {
-        const nom = contact.lastName;
-        if (regExPrenomNomVille(nom)) {
-            document.querySelector("#lastNameErrorMsg").textContent = "";
+        if (regExPrenomNomVille(contact.lastName)) {
             return true;
         } else {
-            document.querySelector("#lastNameErrorMsg").textContent =
+            error.lastName.textContent =
                 "Champ Nom de formulaire invalide, ex: Durant";
             return false;
         }
@@ -167,12 +176,10 @@ btnValidate.addEventListener("click", (event) => {
 
     // Fonctions de contrôle du champ Adresse:
     function addressControl() {
-        const adresse = contact.address;
-        if (regExAdresse(adresse)) {
-            document.querySelector("#addressErrorMsg").textContent = "";
+        if (regExAdresse(contact.address)) {
             return true;
         } else {
-            document.querySelector("#addressErrorMsg").textContent =
+            error.address.textContent =
                 "Champ Adresse de formulaire invalide, ex: 20 rue de la gare";
             return false;
         }
@@ -180,12 +187,10 @@ btnValidate.addEventListener("click", (event) => {
 
     // Fonctions de contrôle du champ Ville:
     function cityControl() {
-        const ville = contact.city;
-        if (regExPrenomNomVille(ville)) {
-            document.querySelector("#cityErrorMsg").textContent = "";
+        if (regExPrenomNomVille(contact.city)) {
             return true;
         } else {
-            document.querySelector("#cityErrorMsg").textContent =
+            error.city.textContent =
                 "Champ Ville de formulaire invalide, ex: Paris";
             return false;
         }
@@ -193,12 +198,10 @@ btnValidate.addEventListener("click", (event) => {
 
     // Fonctions de contrôle du champ Email:
     function mailControl() {
-        const courriel = contact.email;
-        if (regExEmail(courriel)) {
-            document.querySelector("#emailErrorMsg").textContent = "";
+        if (regExEmail(contact.email)) {
             return true;
         } else {
-            document.querySelector("#emailErrorMsg").textContent =
+            error.email.textContent =
                 "Champ Email de formulaire invalide, ex: exemple@contact.fr";
             return false;
         }
@@ -212,7 +215,54 @@ btnValidate.addEventListener("click", (event) => {
         cityControl() &&
         mailControl()
     ) {
+
         // Enregistrer le formulaire dans le local storage
+
         localStorage.setItem("contact", JSON.stringify(contact));
+
+        document.querySelector("#order").value =
+            " Commander !";
+        sendToServer();
+    } else {
+        error("Veuillez bien remplir le formulaire");
+    }
+
+
+    function sendToServer() {
+        const sendToServer = fetch("http://localhost:4000/api/products/order", {
+            method: "POST",
+            body: JSON.stringify({ contact, cart }),
+            headers: {
+                "Content-Type": "application/json",
+            },
+        })
+            // Récupération et stockage de la réponse de l'API (orderId)
+            .then((response) => {
+                return response.json();
+            })
+            .then((server) => {
+                orderId = server.orderId;
+                console.log(orderId);
+            });
+
+        // Si l'orderId a bien été récupéré, on redirige l'utilisateur vers la page de Confirmation
+        if (orderId != "") {
+            location.href = "confirmation.html?id=" + orderId;
+        }
     }
 });
+
+// Maintenir le contenu du localStorage dans le champs du formulaire
+
+let dataFormulaire = JSON.parse(localStorage.getItem("contact"));
+
+console.log(dataFormulaire);
+if (dataFormulaire) {
+    document.querySelector("#firstName").value = dataFormulaire.firstName;
+    document.querySelector("#lastName").value = dataFormulaire.lastName;
+    document.querySelector("#address").value = dataFormulaire.address;
+    document.querySelector("#city").value = dataFormulaire.city;
+    document.querySelector("#email").value = dataFormulaire.email;
+} else {
+    console.log("Le formulaire est vide");
+}
