@@ -220,11 +220,7 @@ btnValidate.addEventListener("click", async (event) => {
 
         localStorage.setItem("contact", JSON.stringify(contact));
 
-        document.querySelector("#order").value =
-            " Commander !";
         sendToServer();
-    } else {
-        error("Veuillez bien remplir le formulaire");
     }
 
 
