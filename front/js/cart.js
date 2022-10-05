@@ -1,5 +1,10 @@
 // Premiere chose à faire : récupérer la clé cart qui est dans le localStorage
-let cart = JSON.parse(localStorage.getItem("cart"));
+let cartStorage = localStorage.getItem("cart");
+let cart = [];
+if (cartStorage) {
+    cart = JSON.parse(cartStorage);
+    getDetailsFromServer();
+}
 // Récupérer les infos de chaque ligne du panier en appelant le serveur (on lui passe l'id, il nous retourne le canap correspondant)
 //console.log(cart);
 // Doc : "http://localhost:4000/api/products/:id")
@@ -8,16 +13,16 @@ async function getProduct(id) {
         fetch(`http://localhost:4000/api/products/${id}`)
             .then((response) => response.json())
             .then((canap) => {
-                resolve(canap)
+                resolve(canap);
             })
             .catch((error) => reject("Erreur : " + error));
-    })
+    });
 }
 
 async function getDetailsFromServer() {
-    let html = '';
+    let html = "";
     let totalPrice = 0;
-    let qty = 0
+    let qty = 0;
 
     // On boucle sur chaque article contenu dans le panier
     for (const canap of cart) {
@@ -54,35 +59,37 @@ async function getDetailsFromServer() {
     const cart__items = document.querySelector("#cart__items");
     cart__items.innerHTML = html;
     // Gestion suppression
-    const deleteBtns = document.querySelectorAll('.deleteItem');
+    const deleteBtns = document.querySelectorAll(".deleteItem");
     for (const deleteBtn of deleteBtns) {
         // On ajoute un écouteur d'evenement sur chaque btn delete
-        deleteBtn.addEventListener('click', () => {
+        deleteBtn.addEventListener("click", () => {
             // On récupère le parent
-            const selectedArticle = deleteBtn.closest('article');
+            const selectedArticle = deleteBtn.closest("article");
             // On récupère l'id et la couleur stockées dans data-color et data-id
-            const removeId = selectedArticle.getAttribute('data-id');
-            const removeColor = selectedArticle.getAttribute('data-color');
+            const removeId = selectedArticle.getAttribute("data-id");
+            const removeColor = selectedArticle.getAttribute("data-color");
             // On boucle sur le cart pour savoir quelle ligne/objet effacer
             // ou on utilise une fonction toute faite qui filtre des données dans un tableau
-            cart = cart.filter((toto) => !(toto.id === removeId && toto.color === removeColor));
+            cart = cart.filter(
+                (toto) => !(toto.id === removeId && toto.color === removeColor)
+            );
             // Mise à jour du panier ds le localstorage
             localStorage.setItem("cart", JSON.stringify(cart));
             // Je rappelle la meme fonction pour mettre à jour l'affichage
             getDetailsFromServer();
-        })
+        });
     }
 
     // Recupérer les boutons qtity
-    const quantityBtns = document.querySelectorAll('.itemQuantity');
+    const quantityBtns = document.querySelectorAll(".itemQuantity");
     for (const quantityBtn of quantityBtns) {
         // On écoute le changement de valeur sur toutes les qtités
-        quantityBtn.addEventListener('change', async () => {
+        quantityBtn.addEventListener("change", async () => {
             // On récupère le parent
-            const selectedArticle = quantityBtn.closest('article');
+            const selectedArticle = quantityBtn.closest("article");
             // On récupère l'id et la couleur stockées dans data-color et data-id
-            const updatedId = selectedArticle.getAttribute('data-id');
-            const updatedColor = selectedArticle.getAttribute('data-color');
+            const updatedId = selectedArticle.getAttribute("data-id");
+            const updatedColor = selectedArticle.getAttribute("data-color");
             // On boucle sur le cart pour savoir quelle ligne/objet éditer
             for (const canap of cart) {
                 if (canap.id === updatedId && canap.color === updatedColor) {
@@ -94,16 +101,13 @@ async function getDetailsFromServer() {
             localStorage.setItem("cart", JSON.stringify(cart));
             // Je rappelle la meme fonction pour mettre à jour l'affichage
             getDetailsFromServer();
-        })
+        });
     }
     // Mettre à jour la quantité globale
     document.getElementById("totalQuantity").textContent = qty;
     // Mettre à jour le prix total
     document.getElementById("totalPrice").textContent = totalPrice;
 }
-
-getDetailsFromServer();
-
 // formulaire
 
 // sélection du bouton Valider
@@ -112,6 +116,13 @@ const btnValidate = document.querySelector("#order");
 // Écoute du bouton Valider sur le click pour pouvoir valider le formulaire
 btnValidate.addEventListener("click", async (event) => {
     event.preventDefault();
+    // S'assurer qu'il y a au moins un produit au panier
+    if (cart.length === 0) {
+        alert(
+            "Merci d'ajouter au moins un produit au panier avant de passer commande"
+        );
+        return false;
+    }
 
     let contact = {
         firstName: document.querySelector("#firstName").value,
@@ -127,13 +138,12 @@ btnValidate.addEventListener("click", async (event) => {
         address: document.querySelector("#addressErrorMsg"),
         city: document.querySelector("#cityErrorMsg"),
         email: document.querySelector("#emailErrorMsg"),
-    }
+    };
 
     // Effacer les champs précédemment en erreur
     for (const field of Object.values(error)) {
-        field.textContent = ''
+        field.textContent = "";
     }
-
 
     // contrôle des champs Prénom, Nom et Ville
     const regExPrenomNomVille = (value) => {
@@ -190,8 +200,7 @@ btnValidate.addEventListener("click", async (event) => {
         if (regExPrenomNomVille(contact.city)) {
             return true;
         } else {
-            error.city.textContent =
-                "Champ Ville de formulaire invalide, ex: Paris";
+            error.city.textContent = "Champ Ville de formulaire invalide, ex: Paris";
             return false;
         }
     }
@@ -209,56 +218,69 @@ btnValidate.addEventListener("click", async (event) => {
 
     // Contrôle du formulaire avant de l'envoyer dans le local storage
     if (
-        firstNameControl() &&
-        lastNameControl() &&
-        addressControl() &&
-        cityControl() &&
-        mailControl()
+        !firstNameControl() ||
+        !lastNameControl() ||
+        !addressControl() ||
+        !cityControl() ||
+        !mailControl()
     ) {
-
-        // Enregistrer le formulaire dans le local storage
-
-        localStorage.setItem("contact", JSON.stringify(contact));
-
-        sendToServer();
+        return false;
     }
 
+    // Enregistrer le formulaire dans le local storage
+    localStorage.setItem("contact", JSON.stringify(contact));
+
+    // Retourner un tableau d'id de canap
+    let products = [];
+    for (const canap of cart) {
+        products.push(canap.id);
+    }
 
     function sendToServer() {
-        const sendToServer = fetch("http://localhost:4000/api/products/order", {
-            method: "POST",
-            body: JSON.stringify({ contact, cart }),
-            headers: {
-                "Content-Type": "application/json",
-            },
-        })
-            // Récupération et stockage de la réponse de l'API (orderId)
-            .then((response) => {
-                return response.json();
+        try {
+            const sendToServer = fetch("http://localhost:4000/api/products/order", {
+                method: "POST",
+                //   body: JSON.stringify({ contact, products }),
+                body: JSON.stringify({
+                    contact: contact,
+                    products: products,
+                }),
+                headers: {
+                    "Content-Type": "application/json",
+                },
             })
-            .then((server) => {
-                orderId = server.orderId;
-                console.log(orderId);
-            });
-
-        // Si l'orderId a bien été récupéré, on redirige l'utilisateur vers la page de Confirmation
-        if (orderId != "") {
-            location.href = "confirmation.html?id=" + orderId;
+                // Récupération et stockage de la réponse de l'API (orderId)
+                .then((response) => {
+                    if (response.status !== 201) {
+                        alert("Une erreur est survenue avant de passer la commande.");
+                    }
+                    return response.json();
+                })
+                .then((server) => {
+                    const orderId = server.orderId;
+                    if (!orderId) {
+                        return false;
+                    }
+                    location.href = "confirmation.html?id=" + orderId;
+                })
+                .catch((e) => {
+                    alert("Une erreur est survenue avant de passer la commande.");
+                });
+        } catch (error) {
+            alert("Une erreur est survenue avant de passer la commande.");
         }
     }
+
+    sendToServer();
 });
 
 // Maintenir le contenu du localStorage dans le champs du formulaire
-
-let dataFormulaire = JSON.parse(localStorage.getItem("contact"));
-
-console.log(dataFormulaire);
-if (dataFormulaire) {
+let data = localStorage.getItem("contact");
+if (data) {
+    let dataFormulaire = JSON.parse(data);
     document.querySelector("#firstName").value = dataFormulaire.firstName;
     document.querySelector("#lastName").value = dataFormulaire.lastName;
     document.querySelector("#address").value = dataFormulaire.address;
     document.querySelector("#city").value = dataFormulaire.city;
     document.querySelector("#email").value = dataFormulaire.email;
-} else {
-    console.log("Le formulaire est vide");
 }

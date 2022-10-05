@@ -6,9 +6,6 @@ const orderId = getProductId();
 const idConfirmation = document.querySelector("#orderId");
 
 //Affichage de l'orderId
-(function () {
-    idConfirmation.innerHTML =
-        `${orderId} `;
 
-    localStorage.clear();
-})();
+idConfirmation.textContent = orderId;
+localStorage.setItem("cart", "");
