@@ -5,7 +5,7 @@ function getProducts() {
         .then((response) => {
             // stocker les produits dans une constante products
             const products = response;
-            // console.log(products);
+
             let html = "";
             // boucler sur les produits pour generer le html attendu
             for (const kanap of products) {
@@ -19,11 +19,11 @@ function getProducts() {
                     <p class="productDescription">${kanap.description}
                     </article>
                     </a>`;
-                //console.log(html);
+
             }
             // recuperer l'element id items
             const items = document.getElementById("items");
-            // console.log(html);
+
             items.innerHTML = html;
             // injecter le html generé dans l'element items
         })

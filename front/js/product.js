@@ -54,11 +54,11 @@ function addToCart() {
         return;
     }
     // Test est ce que le canap + couleur existe deja dans le cart ?
-
-    let cart = JSON.parse(localStorage.getItem("cart"));
+    const cartStorage = localStorage.getItem("cart");
+    let cart = [];
     // Si je n'ai pas de panier j'en créé 1 vide pour pouvoir pousser 1 objet sans avoir d'erreur
-    if (!cart) {
-        cart = []
+    if (cartStorage) {
+        cart = JSON.parse(cartStorage);
     }
 
     // Id+couleur trouvé (meme id + meme couleur) -> mettre à jour la quantité

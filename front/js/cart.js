@@ -6,7 +6,7 @@ if (cartStorage) {
     getDetailsFromServer();
 }
 // Récupérer les infos de chaque ligne du panier en appelant le serveur (on lui passe l'id, il nous retourne le canap correspondant)
-//console.log(cart);
+
 // Doc : "http://localhost:4000/api/products/:id")
 async function getProduct(id) {
     return new Promise((resolve, reject) => {
