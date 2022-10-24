@@ -94,6 +94,12 @@ async function getDetailsFromServer() {
             for (const canap of cart) {
                 if (canap.id === updatedId && canap.color === updatedColor) {
                     canap.quantity = parseInt(quantityBtn.value);
+                    if (canap.quantity > 100) {
+                        alert(
+                            "Vous ne pouvez pas acheter plus de 100 canapés de cette couleur."
+                        );
+                        return;
+                    }
                     // On arrete la boucle quand on a trouvé et mis à jour le bon canap : break
                     break;
                 }

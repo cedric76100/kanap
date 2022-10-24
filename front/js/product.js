@@ -70,6 +70,11 @@ function addToCart() {
             // On a trouvé le meme canapé avec la meme couleur
             // On ajoute la nouvelle quantité à la quantité existante
             canap.quantity += quantityValue;
+            // Tester le total qui doit etre inférieur à 100
+            if (canap.quantity > 100) {
+                alert("Vous pouvez ajouter 100 canapés maximum");
+                return;
+            }
             // Mise à jour du localStorage
             localStorage.setItem("cart", JSON.stringify(cart));
             alert('Nous avons mis à jour la quantité de votre canapé');
